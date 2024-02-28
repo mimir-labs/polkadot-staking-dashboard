@@ -16,6 +16,7 @@ import { useProxySupported } from '../useProxySupported';
 import type { UseSubmitExtrinsic, UseSubmitExtrinsicProps } from './types';
 import { NotificationsController } from 'controllers/NotificationsController';
 import { useExtensions } from '@w3ux/react-connect-kit';
+import { checkCall } from '@mimirdev/apps-sdk';
 
 export const useSubmitExtrinsic = ({
   tx,
@@ -262,10 +263,24 @@ export const useSubmitExtrinsic = ({
       // handle unsigned transaction.
       const { signer } = account;
       try {
-        const unsub = await txRef.current.signAndSend(
-          fromRef.current,
-          { signer },
-          ({ status, events = [] }: AnyApi) => {
+        if (source === 'mimir') {
+          const result = await signer.signPayload({
+            address: fromRef.current,
+            method: txRef.current.method.toHex(),
+            genesisHash: api.genesisHash.toHex(),
+          });
+
+          const call = api.registry.createType('Call', result.payload.method);
+
+          if (!checkCall(api, call, txRef.current.method)) {
+            throw new Error('not safe tx');
+          }
+
+          const newTx = api.tx[call.section][call.method](...call.args);
+
+          newTx.addSignature(result.signer, result.signature, result.payload);
+
+          const unsub = await newTx.send(({ status, events = [] }: AnyApi) => {
             if (!didTxReset.current) {
               didTxReset.current = true;
               resetTx();
@@ -280,8 +295,29 @@ export const useSubmitExtrinsic = ({
                 }
               });
             }
-          }
-        );
+          });
+        } else {
+          const unsub = await txRef.current.signAndSend(
+            fromRef.current,
+            { signer },
+            ({ status, events = [] }: AnyApi) => {
+              if (!didTxReset.current) {
+                didTxReset.current = true;
+                resetTx();
+              }
+
+              handleStatus(status);
+              if (status.isFinalized) {
+                events.forEach(({ event: { method } }: AnyApi) => {
+                  onFinalizedEvent(method);
+                  if (unsubEvents?.includes(method)) {
+                    unsub();
+                  }
+                });
+              }
+            }
+          );
+        }
       } catch (e) {
         onError('default');
       }

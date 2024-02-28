@@ -3,6 +3,7 @@
 
 import { createRoot } from 'react-dom/client';
 import { App } from 'App';
+import { MIMIR_REGEXP, inject, isMimirReady } from '@mimirdev/apps-inject';
 
 // Network styles.
 import 'theme/accents/polkadot-relay.css';
@@ -25,4 +26,13 @@ if (!rootElement) {
 }
 const root = createRoot(rootElement);
 
-root.render(<App />);
+isMimirReady().then((origin) => {
+  if (origin) {
+    if (MIMIR_REGEXP.test(origin)) {
+      inject();
+    } else if (process.env.NODE_ENV === 'development') {
+      inject();
+    }
+  }
+  root.render(<App />);
+});

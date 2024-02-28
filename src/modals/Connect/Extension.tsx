@@ -17,6 +17,23 @@ import { ModalConnectItem } from 'kits/Overlay/structure/ModalConnectItem';
 import { useExtensionAccounts, useExtensions } from '@w3ux/react-connect-kit';
 import { localStorageOrDefault } from '@w3ux/utils';
 
+import MimirSvg from 'img/mimir.svg?react';
+
+const MimirLogo = ({
+  width = '100%',
+  height = '100%',
+}: {
+  width?: string;
+  height?: string;
+}) => (
+  <MimirSvg
+    style={{
+      width,
+      height,
+    }}
+  />
+);
+
 export const Extension = ({ meta, size, flag }: ExtensionProps) => {
   const { t } = useTranslation('modals');
   const { connectExtensionAccounts } = useExtensionAccounts();
@@ -66,7 +83,8 @@ export const Extension = ({ meta, size, flag }: ExtensionProps) => {
     window?.walletExtension?.isNovaWallet && id === 'polkadot-js'
       ? 'nova-wallet'
       : id;
-  const Icon = ExtensionIcons[iconId];
+
+  const Icon = iconId === 'mimir' ? MimirLogo : ExtensionIcons[iconId];
 
   // Determine message to be displayed based on extension status.
   let statusJsx;
