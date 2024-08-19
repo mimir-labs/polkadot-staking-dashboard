@@ -1,4 +1,4 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
@@ -20,7 +20,7 @@ import { useNetwork } from 'contexts/Network';
 import { useActiveAccounts } from 'contexts/ActiveAccounts';
 import type { FormProps, ActivePayout } from './types';
 import { ContentWrapper } from './Wrappers';
-import { SubscanController } from 'controllers/SubscanController';
+import { SubscanController } from 'controllers/Subscan';
 import { ButtonSubmitInvert } from 'kits/Buttons/ButtonSubmitInvert';
 import { ModalPadding } from 'kits/Overlay/structure/ModalPadding';
 import { ModalWarnings } from 'kits/Overlay/structure/ModalWarnings';
@@ -32,7 +32,7 @@ export const Forms = forwardRef(
     ref: ForwardedRef<HTMLDivElement>
   ) => {
     const { t } = useTranslation('modals');
-    const { api, isPagedRewardsActive } = useApi();
+    const { api } = useApi();
     const {
       networkData: { units, unit },
     } = useNetwork();
@@ -68,16 +68,9 @@ export const Forms = forwardRef(
         if (!paginatedValidators) {
           return [];
         }
-
-        return paginatedValidators.forEach(([page, v]) => {
-          if (isPagedRewardsActive(new BigNumber(era))) {
-            return calls.push(api.tx.staking.payoutStakersByPage(v, era, page));
-          }
-          // DEPRECATION: Paged Rewards
-          //
-          // Fall back to deprecated `payoutStakers` if not on paged reward era.
-          return calls.push(api.tx.staking.payoutStakers(v, era));
-        });
+        return paginatedValidators.forEach(([page, v]) =>
+          calls.push(api.tx.staking.payoutStakersByPage(v, era, page))
+        );
       });
       return calls;
     };

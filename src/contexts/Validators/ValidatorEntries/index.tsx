@@ -1,11 +1,11 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { greaterThanZero, rmCommas, shuffle } from '@w3ux/utils';
 import BigNumber from 'bignumber.js';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import type { AnyApi, AnyJson, Fn, Sync } from 'types';
+import type { AnyApi, Fn } from 'types';
 import { useEffectIgnoreInitial } from '@w3ux/hooks';
 import { useNetwork } from 'contexts/Network';
 import { useApi } from 'contexts/Api';
@@ -31,7 +31,8 @@ import {
 } from './defaults';
 import { getLocalEraValidators, setLocalEraValidators } from '../Utils';
 import { useErasPerDay } from 'hooks/useErasPerDay';
-import { IdentitiesController } from 'controllers/IdentitiesController';
+import { IdentitiesController } from 'controllers/Identities';
+import type { AnyJson, Sync } from '@w3ux/types';
 
 export const ValidatorsContext = createContext<ValidatorsContextInterface>(
   defaultValidatorsContext
@@ -44,6 +45,7 @@ export const ValidatorsProvider = ({ children }: { children: ReactNode }) => {
   const {
     isReady,
     api,
+    peopleApi,
     consts: { historyDepth },
     networkMetrics: { earliestStoredSession },
   } = useApi();
@@ -315,14 +317,16 @@ export const ValidatorsProvider = ({ children }: { children: ReactNode }) => {
     // NOTE: validators are shuffled before committed to state.
     setValidators(shuffle(validatorEntries));
 
-    const addresses = validatorEntries.map(({ address }) => address);
-    const { identities, supers } = await IdentitiesController.fetch(
-      api,
-      addresses
-    );
+    if (peopleApi) {
+      const addresses = validatorEntries.map(({ address }) => address);
+      const { identities, supers } = await IdentitiesController.fetch(
+        peopleApi,
+        addresses
+      );
+      setValidatorIdentities(identities);
+      setValidatorSupers(supers);
+    }
 
-    setValidatorIdentities(identities);
-    setValidatorSupers(supers);
     setValidatorsFetched('synced');
   };
 

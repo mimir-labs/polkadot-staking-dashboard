@@ -1,31 +1,17 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import KusamaIconSVG from 'img/kusama_icon.svg?react';
 import KusamaInlineSVG from 'img/kusama_inline.svg?react';
-import KusamaLogoSVG from 'img/kusama_logo.svg?react';
 import PolkadotIconSVG from 'img/polkadot_icon.svg?react';
 import PolkadotInlineSVG from 'img/polkadot_inline.svg?react';
-import PolkadotLogoSVG from 'img/polkadot_logo.svg?react';
 import WestendIconSVG from 'img/westend_icon.svg?react';
 import WestendInlineSVG from 'img/westend_inline.svg?react';
-import WestendLogoSVG from 'img/westend_logo.svg?react';
 import PolkadotTokenSVG from 'config/tokens/svg/DOT.svg?react';
 import KusamaTokenSVG from 'config/tokens/svg/KSM.svg?react';
 import WestendTokenSVG from 'config/tokens/svg/WND.svg?react';
-
-import type { NetworkName, Networks } from 'types';
+import type { Networks, SystemChain } from 'types';
 import BigNumber from 'bignumber.js';
-
-// DEPRECATION: Paged Rewards
-//
-// Temporary until paged rewards migration has completed on all networks.
-export const NetworksWithPagedRewards: NetworkName[] = ['westend'];
-export const PagedRewardsStartEra: Record<NetworkName, BigNumber | null> = {
-  polkadot: null,
-  kusama: null,
-  westend: new BigNumber(7167),
-};
 
 export const NetworkList: Networks = {
   polkadot: {
@@ -44,7 +30,6 @@ export const NetworkList: Networks = {
         Stakeworld: 'wss://dot-rpc.stakeworld.io',
       },
     },
-    namespace: '91b171bb158e2d3848fa23a9f1c25182',
     colors: {
       primary: {
         light: 'rgb(211, 48, 121)',
@@ -73,10 +58,6 @@ export const NetworkList: Networks = {
     brand: {
       icon: PolkadotIconSVG,
       token: PolkadotTokenSVG,
-      logo: {
-        svg: PolkadotLogoSVG,
-        width: '7.2em',
-      },
       inline: {
         svg: PolkadotInlineSVG,
         size: '1.05em',
@@ -105,7 +86,6 @@ export const NetworkList: Networks = {
         Stakeworld: 'wss://ksm-rpc.stakeworld.io',
       },
     },
-    namespace: 'b0a8d493285c2df73290dfb7e61f870f',
     colors: {
       primary: {
         light: 'rgb(31, 41, 55)',
@@ -134,10 +114,6 @@ export const NetworkList: Networks = {
     brand: {
       icon: KusamaIconSVG,
       token: KusamaTokenSVG,
-      logo: {
-        svg: KusamaLogoSVG,
-        width: '7.2em',
-      },
       inline: {
         svg: KusamaInlineSVG,
         size: '1.35em',
@@ -165,7 +141,6 @@ export const NetworkList: Networks = {
         Stakeworld: 'wss://wnd-rpc.stakeworld.io',
       },
     },
-    namespace: 'e143f23803ac50e8f6f8e62695d1ce9e',
     colors: {
       primary: {
         light: '#da4e71',
@@ -194,10 +169,6 @@ export const NetworkList: Networks = {
     brand: {
       icon: WestendIconSVG,
       token: WestendTokenSVG,
-      logo: {
-        svg: WestendLogoSVG,
-        width: '7.1em',
-      },
       inline: {
         svg: WestendInlineSVG,
         size: '0.96em',
@@ -209,5 +180,44 @@ export const NetworkList: Networks = {
     },
     defaultFeeReserve: 0.1,
     maxExposurePageSize: new BigNumber(64),
+  },
+};
+
+export const SystemChainList: Record<string, SystemChain> = {
+  'people-polkadot': {
+    name: 'people-polkadot',
+    ss58: 0,
+    units: 10,
+    unit: 'DOT',
+    endpoints: {
+      lightClient: 'people_polkadot', // NOTE: Currently not being used. TODO: Revise this and activate once People chain specs are available to use.
+      rpcEndpoints: {
+        Parity: 'wss://polkadot-people-rpc.polkadot.io',
+      },
+    },
+  },
+  'people-kusama': {
+    name: 'people-kusama',
+    ss58: 2,
+    units: 12,
+    unit: 'KSM',
+    endpoints: {
+      lightClient: 'people_kusama', // NOTE: Currently not being used. TODO: Revise this and activate once People chain specs are available to use.
+      rpcEndpoints: {
+        Parity: 'wss://kusama-people-rpc.polkadot.io',
+      },
+    },
+  },
+  'people-westend': {
+    name: 'people-westend',
+    ss58: 42,
+    units: 12,
+    unit: 'WND',
+    endpoints: {
+      lightClient: 'people_westend', // NOTE: Currently not being used. TODO: Revise this and activate once People chain specs are available to use.
+      rpcEndpoints: {
+        Parity: 'wss://westend-people-rpc.polkadot.io',
+      },
+    },
   },
 };

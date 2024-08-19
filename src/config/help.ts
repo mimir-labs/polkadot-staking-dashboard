@@ -1,4 +1,4 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import type { HelpItems } from 'contexts/Help/types';
@@ -115,6 +115,22 @@ export const HelpConfig: HelpItems = [
     ],
   },
   {
+    key: 'decentralization',
+    definitions: [
+      'Decentralization Analytics Period',
+      'Geolocation of Each Nomination',
+      'Nomination Payout Distribution',
+      'Total Payouts Analysed',
+    ],
+    external: [
+      [
+        'polkawatchAnalytics',
+        'https://blog.polkawatch.app/introducing-polkawatch/',
+        'polkawatch.app',
+      ],
+    ],
+  },
+  {
     key: 'validators',
     definitions: [
       'Validator',
@@ -126,7 +142,6 @@ export const HelpConfig: HelpItems = [
       'Self Stake',
       'Nominator Stake',
       'Commission',
-      'Over Subscribed',
       'Blocked Nominations',
       'Rewards By Country And Network',
     ],

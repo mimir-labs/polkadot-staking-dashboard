@@ -1,39 +1,29 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { planckToUnit } from '@w3ux/utils';
-import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 import { useActivePool } from 'contexts/Pools/ActivePool';
 import { useStaking } from 'contexts/Staking';
 import { useValidators } from 'contexts/Validators/ValidatorEntries';
-import type { AnyJson, BondFor, MaybeAddress } from 'types';
-import { useNetwork } from 'contexts/Network';
+import type { BondFor, MaybeAddress } from 'types';
 import { useSyncing } from 'hooks/useSyncing';
 import { useBalances } from 'contexts/Balances';
+import type { AnyJson } from '@w3ux/types';
 
 export const useNominationStatus = () => {
   const { t } = useTranslation();
-  const {
-    networkData: { units },
-  } = useNetwork();
-  const {
-    inSetup,
-    eraStakers,
-    getLowestRewardFromStaker,
-    getNominationsStatusFromTargets,
-  } = useStaking();
   const { validators } = useValidators();
   const { getNominations } = useBalances();
   const { syncing } = useSyncing(['era-stakers']);
   const { activePoolNominations } = useActivePool();
+  const { inSetup, eraStakers, getNominationsStatusFromTargets } = useStaking();
 
   // Utility to get an account's nominees alongside their status.
   const getNominationSetStatus = (who: MaybeAddress, type: BondFor) => {
     const nominations =
       type === 'nominator'
         ? getNominations(who)
-        : activePoolNominations?.targets ?? [];
+        : (activePoolNominations?.targets ?? []);
 
     return getNominationsStatusFromTargets(who, nominations);
   };
@@ -64,23 +54,10 @@ export const useNominationStatus = () => {
               ?.others || [];
 
           if (others.length) {
-            // If the provided account is a part of the validator's backers, check if they are above
-            // the lowest reward threshold. If so, they are earning rewards and this iteration can
-            // exit.
-            const stakedValue =
-              others?.find((o) => o.who === who)?.value ?? false;
-            if (stakedValue) {
-              const { lowest } = getLowestRewardFromStaker(nominee);
-              if (
-                planckToUnit(
-                  new BigNumber(stakedValue),
-                  units
-                ).isGreaterThanOrEqualTo(lowest)
-              ) {
-                earningRewards = true;
-                return false;
-              }
-            }
+            // If the provided account is a part of the validator's backers they are earning
+            // rewards.
+            earningRewards = true;
+            return false;
           }
         }
         return true;

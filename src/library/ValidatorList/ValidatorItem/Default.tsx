@@ -1,4 +1,4 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import {
@@ -14,7 +14,7 @@ import { ParaValidator } from 'library/ListItem/Labels/ParaValidator';
 import { Labels, Separator, Wrapper } from 'library/ListItem/Wrappers';
 import { useOverlay } from 'kits/Overlay/Provider';
 import { usePlugins } from 'contexts/Plugins';
-import type { AnyJson } from 'types';
+import type { AnyJson } from '@w3ux/types';
 import { Quartile } from 'library/ListItem/Labels/Quartile';
 import { useValidators } from '../../../contexts/Validators/ValidatorEntries';
 import { useList } from '../../List/context';
@@ -23,7 +23,6 @@ import { Commission } from '../../ListItem/Labels/Commission';
 import { EraStatus } from '../../ListItem/Labels/EraStatus';
 import { FavoriteValidator } from '../../ListItem/Labels/FavoriteValidator';
 import { Identity } from '../../ListItem/Labels/Identity';
-import { Oversubscribed } from '../../ListItem/Labels/Oversubscribed';
 import { Select } from '../../ListItem/Labels/Select';
 import { getIdentityDisplay } from './Utils';
 import type { ValidatorItemProps } from './types';
@@ -122,7 +121,6 @@ export const Default = ({
           <div>
             <Labels style={{ marginBottom: '0.9rem' }}>
               <Quartile address={address} />
-              <Oversubscribed address={address} />
               <Blocked prefs={prefs} />
               <Commission commission={commission} />
               <ParaValidator address={address} />

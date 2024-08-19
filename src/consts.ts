@@ -1,4 +1,4 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { stringToU8a } from '@polkadot/util';
@@ -6,9 +6,7 @@ import { stringToU8a } from '@polkadot/util';
 /*
  * Global Constants
  */
-export const AppVersion = '1.3.1';
 export const DappName = 'Polkadot Staking Dashboard';
-export const PolkadotUrl = 'https://polkadot.network/features/staking/';
 export const ManualSigners = ['ledger', 'vault'];
 
 /*
@@ -23,7 +21,7 @@ export const U32Opts = { bitLength: 32, isLe: true };
  */
 
 export const MaxPageWidth = 1450;
-export const SideMenuMaximisedWidth = 185;
+export const SideMenuMaximisedWidth = 195;
 export const SideMenuMinimisedWidth = 75;
 export const SectionFullWidthThreshold = 1000;
 export const PageWidthSmallThreshold = 825;
@@ -38,3 +36,5 @@ export const TipsThresholdMedium = 1200;
  */
 export const MaxPayoutDays = 60;
 export const MaxEraRewardPointsEras = 10;
+export const ZondaxMetadataHashApiUrl =
+  'https://api.zondax.ch/polkadot/node/metadata/hash';

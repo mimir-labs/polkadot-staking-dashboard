@@ -1,4 +1,4 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import {
@@ -12,7 +12,7 @@ import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useApi } from 'contexts/Api';
 import { useStaking } from 'contexts/Staking';
-import type { AnyApi, AnyJson, MaybeAddress } from 'types';
+import type { AnyApi, MaybeAddress } from 'types';
 import Worker from 'workers/stakers?worker';
 import { useEffectIgnoreInitial } from '@w3ux/hooks';
 import { validateLocalExposure } from 'contexts/Validators/Utils';
@@ -24,6 +24,7 @@ import type {
   LocalMeta,
   MetaInterface,
 } from './types';
+import type { AnyJson } from '@w3ux/types';
 
 const worker = new Worker();
 
@@ -34,16 +35,19 @@ export const FastUnstakeContext = createContext<FastUnstakeContextInterface>(
 export const useFastUnstake = () => useContext(FastUnstakeContext);
 
 export const FastUnstakeProvider = ({ children }: { children: ReactNode }) => {
-  const { activeEra } = useApi();
   const { network } = useNetwork();
   const { activeAccount } = useActiveAccounts();
   const { inSetup, fetchEraStakers, isBonding } = useStaking();
   const {
     api,
+    consts,
     isReady,
+    activeEra,
     consts: { bondDuration },
     networkMetrics: { fastUnstakeErasToCheckPerBlock },
   } = useApi();
+
+  const { maxExposurePageSize } = consts;
 
   // store whether a fast unstake check is in progress.
   const [checking, setChecking] = useState<boolean>(false);
@@ -262,6 +266,7 @@ export const FastUnstakeProvider = ({ children }: { children: ReactNode }) => {
       who: activeAccount,
       networkName: network,
       exitOnExposed: true,
+      maxExposurePageSize: maxExposurePageSize.toString(),
       exposures,
     });
   };

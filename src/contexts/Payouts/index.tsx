@@ -1,17 +1,17 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import type { ReactNode } from 'react';
 import { useState, useEffect, useRef, useContext, createContext } from 'react';
 import { useStaking } from 'contexts/Staking';
 import { useApi } from 'contexts/Api';
-import type { AnyApi, AnyJson, Sync } from 'types';
+import type { AnyApi } from 'types';
+import type { AnyJson, Sync } from '@w3ux/types';
 import Worker from 'workers/stakers?worker';
 import { rmCommas, setStateWithRef } from '@w3ux/utils';
 import BigNumber from 'bignumber.js';
 import { useNetwork } from 'contexts/Network';
 import { useActiveAccounts } from 'contexts/ActiveAccounts';
-import { NetworksWithPagedRewards } from 'config/networks';
 import { MaxSupportedPayoutEras, defaultPayoutsContext } from './defaults';
 import type {
   LocalValidatorExposure,
@@ -35,9 +35,9 @@ export const usePayouts = () => useContext(PayoutsContext);
 
 export const PayoutsProvider = ({ children }: { children: ReactNode }) => {
   const { network } = useNetwork();
+  const { api, consts, activeEra } = useApi();
   const { activeAccount } = useActiveAccounts();
   const { isNominating, fetchEraStakers } = useStaking();
-  const { api, consts, activeEra, isPagedRewardsActive } = useApi();
   const { maxExposurePageSize } = consts;
 
   // Store active accont's payout state.
@@ -96,6 +96,7 @@ export const PayoutsProvider = ({ children }: { children: ReactNode }) => {
         who: activeAccount,
         networkName: network,
         maxExposurePageSize: maxExposurePageSize.toString(),
+        exitOnExposed: false,
         exposures,
       });
     }
@@ -161,21 +162,6 @@ export const PayoutsProvider = ({ children }: { children: ReactNode }) => {
       new BigNumber(b).minus(a).toNumber()
     );
 
-    // Helper function to check which eras a validator was exposed in.
-    const validatorExposedEras = (validator: string) => {
-      const exposedEras: string[] = [];
-      for (const era of erasToCheck) {
-        if (
-          Object.values(
-            Object.keys(getLocalEraExposure(network, era, activeAccount))
-          )?.[0] === validator
-        ) {
-          exposedEras.push(era);
-        }
-      }
-      return exposedEras;
-    };
-
     // Fetch controllers in order to query ledgers.
     const bondedResults =
       await api.query.staking.bonded.multi<AnyApi>(uniqueValidators);
@@ -192,66 +178,34 @@ export const PayoutsProvider = ({ children }: { children: ReactNode }) => {
 
     // Refer to new `ClaimedRewards` storage item and calculate unclaimed rewards from that and
     // `exposedPage` stored locally in exposure data.
-    if (isPagedRewardsActive(activeEra.index)) {
-      // Accumulate calls to fetch unclaimed rewards for each era for all validators.
-      const unclaimedRewardsEntries = erasToCheck
-        .map((era) => uniqueValidators.map((v) => [era, v]))
-        .flat();
 
-      const results = await Promise.all(
-        unclaimedRewardsEntries.map(([era, v]) =>
-          api.query.staking.claimedRewards<AnyApi>(era, v)
-        )
-      );
+    // Accumulate calls to fetch unclaimed rewards for each era for all validators.
+    const unclaimedRewardsEntries = erasToCheck
+      .map((era) => uniqueValidators.map((v) => [era, v]))
+      .flat();
 
-      for (let i = 0; i < results.length; i++) {
-        const pages = results[i].toHuman() || [];
-        const era = unclaimedRewardsEntries[i][0];
-        const validator = unclaimedRewardsEntries[i][1];
-        const exposure = getLocalEraExposure(network, era, activeAccount);
+    const results = await Promise.all(
+      unclaimedRewardsEntries.map(([era, v]) =>
+        api.query.staking.claimedRewards<AnyApi>(era, v)
+      )
+    );
 
-        // Add to `unclaimedRewards` if payout page has not yet been claimed.
-        if (!pages.includes(exposure.exposedPage)) {
-          if (unclaimedRewards?.[validator]) {
-            unclaimedRewards[validator].push(era);
-          } else {
-            unclaimedRewards[validator] = [era];
-          }
-        }
-      }
-    } else {
-      // DEPRECATION: Paged Rewards
-      //
-      // Use `staking.ledger` to get unclaimed reward eras. Read `legacyClaimedRewards`
-      // if paged rewards are active, otherwise use `claimedRewards`.
-      const ledgerResults = await api.query.staking.ledger.multi<AnyApi>(
-        Object.values(validatorControllers)
-      );
+    for (let i = 0; i < results.length; i++) {
+      const pages = results[i].toHuman() || [];
+      const era = unclaimedRewardsEntries[i][0];
+      const validator = unclaimedRewardsEntries[i][1];
+      const exposure = getLocalEraExposure(network, era, activeAccount);
+      const exposedPage =
+        exposure?.[validator]?.exposedPage !== undefined
+          ? String(exposure[validator].exposedPage)
+          : undefined;
 
-      // Fetch ledgers to determine which eras have not yet been claimed per validator. Only
-      // includes eras that are in `erasToCheck`.
-      for (const ledgerResult of ledgerResults) {
-        const ledger = ledgerResult.unwrapOr(null)?.toHuman();
-        if (ledger) {
-          // get claimed eras within `erasToCheck`.
-          const erasClaimed = ledger[
-            NetworksWithPagedRewards.includes(network)
-              ? 'legacyClaimedRewards'
-              : 'claimedRewards'
-          ]
-            .map((e: string) => rmCommas(e))
-            .filter(
-              (e: string) =>
-                new BigNumber(e).isLessThanOrEqualTo(startEra) &&
-                new BigNumber(e).isGreaterThanOrEqualTo(endEra)
-            );
-
-          // filter eras yet to be claimed
-          unclaimedRewards[ledger.stash] = erasToCheck.filter(
-            (era) =>
-              validatorExposedEras(ledger.stash).includes(era) &&
-              !erasClaimed.includes(era)
-          );
+      // Add to `unclaimedRewards` if payout page has not yet been claimed.
+      if (!pages.includes(exposedPage)) {
+        if (unclaimedRewards?.[validator]) {
+          unclaimedRewards[validator].push(era);
+        } else {
+          unclaimedRewards[validator] = [era];
         }
       }
     }
@@ -315,7 +269,7 @@ export const PayoutsProvider = ({ children }: { children: ReactNode }) => {
         const staked = new BigNumber(localExposed?.staked || '0');
         const total = new BigNumber(localExposed?.total || '0');
         const isValidator = localExposed?.isValidator || false;
-        const exposedPage = localExposed?.exposedPage || 1;
+        const exposedPage = localExposed?.exposedPage || 0;
 
         // Calculate the validator's share of total era payout.
         const totalRewardPoints = new BigNumber(
@@ -370,8 +324,35 @@ export const PayoutsProvider = ({ children }: { children: ReactNode }) => {
     if (!unclaimedPayouts) {
       return;
     }
+
+    // Delete the payout from local storage.
+    const localPayouts = localStorage.getItem(`${network}_unclaimed_payouts`);
+    if (localPayouts && activeAccount) {
+      const parsed = JSON.parse(localPayouts);
+
+      if (parsed?.[activeAccount]?.[era]?.[validator]) {
+        delete parsed[activeAccount][era][validator];
+
+        // Delete the era if it has no more payouts.
+        if (Object.keys(parsed[activeAccount][era]).length === 0) {
+          delete parsed[activeAccount][era];
+        }
+
+        // Delete the active account if it has no more eras.
+        if (Object.keys(parsed[activeAccount]).length === 0) {
+          delete parsed[activeAccount];
+        }
+      }
+      localStorage.setItem(
+        `${network}_unclaimed_payouts`,
+        JSON.stringify(parsed)
+      );
+    }
+
+    // Remove the payout from state.
     const newUnclaimedPayouts = { ...unclaimedPayouts };
     delete newUnclaimedPayouts[era][validator];
+
     setUnclaimedPayouts(newUnclaimedPayouts);
   };
 

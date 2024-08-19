@@ -1,4 +1,4 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import type { ReactNode } from 'react';
@@ -14,9 +14,11 @@ import { useEffectIgnoreInitial } from '@w3ux/hooks';
 import { defaultImportedAccountsContext } from './defaults';
 import type { ImportedAccountsContextInterface } from './types';
 import { useOtherAccounts } from '../OtherAccounts';
-import { BalancesController } from 'controllers/BalancesController';
+import { BalancesController } from 'controllers/Balances';
 import { useApi } from 'contexts/Api';
 import { useNetwork } from 'contexts/Network';
+import { getActiveAccountLocal, getActiveProxyLocal } from '../Utils';
+import { useActiveAccounts } from 'contexts/ActiveAccounts';
 
 export const ImportedAccountsContext =
   createContext<ImportedAccountsContextInterface>(
@@ -32,10 +34,12 @@ export const ImportedAccountsProvider = ({
 }) => {
   const { isReady, api } = useApi();
   const {
+    network,
     networkData: { ss58 },
   } = useNetwork();
   const { otherAccounts } = useOtherAccounts();
   const { getExtensionAccounts } = useExtensionAccounts();
+  const { setActiveAccount, setActiveProxy } = useActiveAccounts();
 
   // Get the imported extension accounts formatted with the current network's ss58 prefix.
   const extensionAccounts = getExtensionAccounts(ss58);
@@ -119,6 +123,24 @@ export const ImportedAccountsProvider = ({
       );
     }
   }, [isReady, allAccountsStringified]);
+
+  // Re-sync the active account and active proxy on network change.
+  useEffectIgnoreInitial(() => {
+    const localActiveAccount = getActiveAccountLocal(network, ss58);
+
+    if (getAccount(localActiveAccount) !== null) {
+      setActiveAccount(getActiveAccountLocal(network, ss58), false);
+    } else {
+      setActiveAccount(null, false);
+    }
+
+    const localActiveProxy = getActiveProxyLocal(network, ss58);
+    if (getAccount(localActiveProxy?.address || null)) {
+      setActiveProxy(getActiveProxyLocal(network, ss58), false);
+    } else {
+      setActiveProxy(null, false);
+    }
+  }, [network]);
 
   return (
     <ImportedAccountsContext.Provider

@@ -1,11 +1,11 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { enGB, zhCN } from 'date-fns/locale';
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { AppVersion } from 'consts';
-import type { AnyJson } from 'types';
+import { version } from '../../package.json';
+import type { AnyJson } from '@w3ux/types';
 import baseEn from './en/base.json';
 import helpEn from './en/help.json';
 import libEn from './en/library.json';
@@ -51,7 +51,7 @@ export const fallbackResources = {
 
 // Refresh local storage resources if in development, or if new app version is present.
 if (
-  localStorage.getItem('app_version') !== AppVersion ||
+  localStorage.getItem('app_version') !== version ||
   import.meta.env.MODE === 'development'
 ) {
   localStorage.removeItem('lng_resources');

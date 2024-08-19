@@ -1,4 +1,4 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { faUsb } from '@fortawesome/free-brands-svg-icons';
@@ -33,8 +33,8 @@ export const Submit = ({
   const { getTxSignature } = useTxMeta();
   const { getAccount } = useImportedAccounts();
   const { activeAccount } = useActiveAccounts();
-  const { getTxPayload, getPayloadUid } = useTxMeta();
-  const { appName } = getLedgerApp(network);
+  const { getTxMetadata, getTxPayload, getPayloadUid } = useTxMeta();
+  const { txMetadataChainId } = getLedgerApp(network);
 
   const getAddressIndex = () =>
     (getAccount(activeAccount) as LedgerAccount)?.index || 0;
@@ -43,13 +43,21 @@ export const Submit = ({
   const handleTxSubmit = async () => {
     const uid = getPayloadUid();
     const accountIndex = getAddressIndex();
+    const txMetadata = await getTxMetadata();
     const payload = await getTxPayload();
-    await handleSignTx(appName, uid, accountIndex, payload);
+
+    await handleSignTx(
+      txMetadataChainId,
+      uid,
+      accountIndex,
+      payload,
+      txMetadata
+    );
   };
 
   // Check device runtime version.
   const handleCheckRuntimeVersion = async () => {
-    await checkRuntimeVersion(appName);
+    await checkRuntimeVersion(txMetadataChainId);
   };
 
   // Is the transaction ready to be submitted?

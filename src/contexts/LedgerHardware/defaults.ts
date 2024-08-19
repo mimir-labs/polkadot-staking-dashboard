@@ -1,4 +1,4 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function */
 
@@ -13,7 +13,8 @@ export const defaultLedgerHardwareContext: LedgerHardwareContextInterface = {
   transportResponse: null,
   integrityChecked: false,
   setIntegrityChecked: (checked) => {},
-  checkRuntimeVersion: async (appName) => new Promise((resolve) => resolve()),
+  checkRuntimeVersion: async (txMetadataChainId) =>
+    new Promise((resolve) => resolve()),
   setStatusCode: (a, s) => {},
   setIsExecuting: (b) => {},
   getIsExecuting: () => false,
@@ -23,10 +24,10 @@ export const defaultLedgerHardwareContext: LedgerHardwareContextInterface = {
   setFeedback: (s, h) => {},
   resetFeedback: () => {},
   handleUnmount: () => {},
-  handleErrors: (appName, err) => {},
-  handleGetAddress: (appName, accountIndex) =>
+  handleErrors: (err) => {},
+  handleGetAddress: (txMetadataChainId, accountIndex, ss58Prefix) =>
     new Promise((resolve) => resolve()),
-  handleSignTx: (appName, uid, index, payload) =>
+  handleSignTx: (txMetadataChainId, uid, index, payload, txMetadata) =>
     new Promise((resolve) => resolve()),
   handleResetLedgerTask: () => {},
   runtimesInconsistent: false,

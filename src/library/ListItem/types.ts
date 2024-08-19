@@ -1,4 +1,4 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
 import type { BondFor, MaybeAddress } from 'types';
@@ -42,10 +42,6 @@ export interface NominationStatusProps {
   nominator: MaybeAddress;
   status?: NominationStatus;
   noMargin?: boolean;
-}
-
-export interface OversubscribedProps {
-  address: MaybeAddress;
 }
 
 export interface SelectProps {

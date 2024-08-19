@@ -1,13 +1,14 @@
-// Copyright 2024 @paritytech/polkadot-staking-dashboard authors & contributors
+// Copyright 2024 @polkadot-cloud/polkadot-staking-dashboard authors & contributors
 // SPDX-License-Identifier: GPL-3.0-only
 
+import type { AnyJson } from '@w3ux/types';
 import type { FunctionComponent, SVGProps } from 'react';
-import type { AnyJson, MaybeString, NetworkName } from 'types';
+import type { MaybeString, NetworkName } from 'types';
 
 export interface LedgerHardwareContextInterface {
   integrityChecked: boolean;
   setIntegrityChecked: (checked: boolean) => void;
-  checkRuntimeVersion: (appName: string) => Promise<void>;
+  checkRuntimeVersion: (txMetadataChainId: string) => Promise<void>;
   transportResponse: AnyJson;
   setStatusCode: (ack: string, statusCode: LedgerStatusCode) => void;
   setIsExecuting: (v: boolean) => void;
@@ -18,14 +19,19 @@ export interface LedgerHardwareContextInterface {
   setFeedback: (s: MaybeString, helpKey?: MaybeString) => void;
   resetFeedback: () => void;
   handleUnmount: () => void;
-  handleErrors: (appName: string, err: unknown) => void;
+  handleErrors: (err: unknown) => void;
   runtimesInconsistent: boolean;
-  handleGetAddress: (appName: string, accountIndex: number) => Promise<void>;
+  handleGetAddress: (
+    txMetadataChainId: string,
+    accountIndex: number,
+    ss58Prefix: number
+  ) => Promise<void>;
   handleSignTx: (
-    appName: string,
+    txMetadataChainId: string,
     uid: number,
     index: number,
-    payload: AnyJson
+    payload: AnyJson,
+    txMetadata: AnyJson
   ) => Promise<void>;
   handleResetLedgerTask: () => void;
 }
@@ -71,9 +77,9 @@ export interface LedgerAddress {
   pubKey: string;
 }
 
-export interface LedgerApp {
+export interface LedgerChain {
   network: NetworkName;
-  appName: string;
+  txMetadataChainId: string;
   Icon: FunctionComponent<SVGProps<SVGSVGElement>>;
 }
 
