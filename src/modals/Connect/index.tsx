@@ -28,12 +28,6 @@ import { useEffectIgnoreInitial } from '@w3ux/hooks';
 import extensions from '@w3ux/extension-assets';
 import type { ExtensionArrayListItem } from '@w3ux/extension-assets/util';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(extensions as unknown as any)['mimir'] = {
-  features: ['getAccounts', 'signer'],
-  title: 'Mimir Wallet',
-  website: 'app.mimir.global',
-};
 export const Connect = () => {
   const { t } = useTranslation('modals');
   const { extensionsStatus } = useExtensions();

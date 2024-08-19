@@ -4,6 +4,18 @@
 import { createRoot } from 'react-dom/client';
 import { App } from 'App';
 import { MIMIR_REGEXP, inject, isMimirReady } from '@mimirdev/apps-inject';
+import extensions from '@w3ux/extension-assets';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(extensions as unknown as any)['mimir'] = {
+  features: ['getAccounts', 'signer'],
+  title: 'Mimir Wallet',
+  category: 'web-extension',
+  website: {
+    url: 'app.mimir.global',
+    text: 'app.mimir.global',
+  },
+};
 
 // Network styles.
 import 'theme/accents/polkadot-relay.css';
